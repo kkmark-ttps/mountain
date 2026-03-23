@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大庄國小 - 合歡山探索課程系統</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    body { background-color: #f4f1ea; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; color: #3e2723; line-height: 1.6; }
+    .container { max-width: 600px; margin: 20px auto; background: #ffffff; padding: 40px; border-top: 12px solid #2e7d32; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+    h2 { color: #2e7d32; text-align: center; margin-bottom: 5px; }
+    .subtitle { text-align: center; color: #8d6e63; font-size: 0.9em; margin-bottom: 25px; border-bottom: 2px dashed #e0e0e0; padding-bottom: 15px; }
+    
+    .tab-buttons { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; }
+    .tab-btn { padding: 10px 25px; border: none; border-radius: 20px; cursor: pointer; background: #d7ccc8; font-weight: bold; transition: 0.3s; }
+    .tab-btn.active { background: #2e7d32; color: white; }
+
+    .form-group { margin-bottom: 20px; }
+    label { font-weight: bold; color: #5d4037; display: block; margin-bottom: 8px; }
+    
+    input, textarea, select { width: 100%; padding: 12px; border: 1px solid #d7ccc8; border-radius: 6px; box-sizing: border-box; font-size: 16px; font-family: inherit; }
+    input:focus, textarea:focus, select:focus { border: 2px solid #2e7d32; outline: none; background-color: #f1f8e9; }
+    
+    #idNumber, #qIdNumber { text-transform: uppercase; }
+
+    .radio-group { display: flex; gap: 30px; padding: 10px 0; }
+    .radio-item { display: flex; align-items: center; cursor: pointer; gap: 8px; font-size: 16px; }
+    .radio-item input[type="radio"] { width: 20px; height: 20px; margin: 0; cursor: pointer; accent-color: #2e7d32; }
+    
+    .submit-btn { background-color: #2e7d32; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    .submit-btn:disabled { background-color: #999; cursor: not-allowed; }
+    #loadingMsg { color: #f57c00; font-weight: bold; text-align: center; margin-top: 15px; display: none; }
+    
+    #queryResult { margin-top: 20px; padding: 25px; background: #fdfdfd; border: 1px solid #d7ccc8; border-radius: 8px; display: none; }
+    .result-row { display: flex; border-bottom: 1px solid #eee; padding: 10px 0; }
+    .result-label { font-weight: bold; color: #2e7d32; width: 130px; }
+    .delete-btn { background-color: #d32f2f; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
+    .delete-btn:hover { background-color: #b71c1c; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>🌲 合歡山探索課程系統</h2>
+  <div class="subtitle">大庄國小山野教育團隊</div>
+
+  <div class="tab-buttons">
+    <button class="tab-btn active" onclick="showPanel('regPanel')">我要報名 🎒</button>
+    <button class="tab-btn" onclick="showPanel('queryPanel')">查詢與管理 🔍</button>
+  </div>
+
+  <div id="regPanel">
+    <form id="regForm">
+      <div class="form-group">
+        <label>🏫 班級：</label>
+        <select id="className" required>
+          <option value="" disabled selected>請選擇班級</option>
+          <option value="501">501</option>
+          <option value="502">502</option>
+          <option value="503">503</option>
+          <option value="504">504</option>
+          <option value="505">505</option>
+          <option value="601">601</option>
+          <option value="602">602</option>
+          <option value="603">603</option>
+          <option value="604">604</option>
+          <option value="605">605</option>
+        </select>
+      </div>
+
+      <div class="form-group"><label>👤 學生姓名：</label><input type="text" id="name" required></div>
+      <div class="form-group"><label>🪪 身分證號碼：</label><input type="text" id="idNumber" placeholder="例如：A123456789" maxlength="10" required></div>
+      <div class="form-group"><label>📅 出生年月日：</label><input type="date" id="birthday" required></div>
+      <div class="form-group"><label>✉️ 聯絡信箱：</label><input type="email" id="email" required></div>
+      <div class="form-group"><label>👨‍👩‍👧 家長姓名與關係：</label><input type="text" id="parent" placeholder="例如：王大明（父）" required></div>
+      <div class="form-group"><label>☎️ 聯絡電話 (市話)：</label><input type="tel" id="tel"></div>
+      <div class="form-group"><label>📱 聯絡手機：</label><input type="tel" id="phone" required></div>
+      <div class="form-group"><label>🏠 住址：</label><input type="text" id="address" required></div>
+      
+      <div class="form-group">
+        <label>🍱 飲食習慣：</label>
+        <div class="radio-group">
+          <label class="radio-item"><input type="radio" name="food" value="葷食" checked> 葷食</label>
+          <label class="radio-item"><input type="radio" name="food" value="素食"> 素食</label>
+        </div>
+      </div>
+      
+      <div class="form-group"><label>⚠️ 特殊病史或備註：</label><textarea id="notice" rows="2"></textarea></div>
+      
+      <button type="submit" id="subBtn" class="submit-btn">送出報名資料 🎒</button>
+      <div id="loadingMsg">⏳ 資料正在同步至雲端，請稍候...</div>
+    </form>
+  </div>
+
+  <div id="queryPanel" style="display: none;">
+    <div class="form-group"><label>👤 學生姓名：</label><input type="text" id="qName" placeholder="請輸入姓名"></div>
+    <div class="form-group"><label>🪪 身分證號碼：</label><input type="text" id="qIdNumber" placeholder="請輸入身分證號碼" maxlength="10"></div>
+    <button onclick="checkData()" class="submit-btn" style="background-color: #5d4037;">開始核對資料 🔍</button>
+    <div id="queryResult"></div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, query, where, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAle_VI3aq6_e53bi73TNIKBOB3QBCktgU",
+    authDomain: "hehuan-d27be.firebaseapp.com",
+    projectId: "hehuan-d27be",
+    storageBucket: "hehuan-d27be.firebasestorage.app",
+    messagingSenderId: "48442219592",
+    appId: "1:48442219592:web:93a168c2746b8588c1cc7d"
+  };
+  const db = getFirestore(initializeApp(firebaseConfig));
+  const gasUrl = "https://script.google.com/macros/s/AKfycbym_-ktxndZ6zuMGMWA88u5P5XI57MWs-afZJ-NKUOXCA6ePeYkhOuQsRIkuQuu9Z3M/exec";
+
+  window.showPanel = (p) => {
+    document.getElementById('regPanel').style.display = p === 'regPanel' ? 'block' : 'none';
+    document.getElementById('queryPanel').style.display = p === 'queryPanel' ? 'block' : 'none';
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.includes(p === 'regPanel' ? '報名' : '查詢')));
+  };
+
+  window.checkData = async () => {
+    const n = document.getElementById('qName').value.trim();
+    let idNum = document.getElementById('qIdNumber').value.trim().toUpperCase();
+    const res = document.getElementById('queryResult');
+    
+    if (!n || !idNum) { 
+      Swal.fire({ icon: 'warning', title: '提醒', text: '請輸入完整的姓名與身分證號碼！', confirmButtonColor: '#2e7d32' });
+      return; 
+    }
+    
+    res.style.display = "block"; res.innerHTML = "🔍 搜尋中...";
+    
+    const q = query(collection(db, "registrations"), where("name", "==", n), where("idNumber", "==", idNum));
+    const snap = await getDocs(q);
+    
+    if (snap.empty) { 
+      res.innerHTML = "❌ 查無報名紀錄，請確認姓名與身分證號碼是否正確。"; 
+    } else {
+      const d = snap.docs[0].data(); const id = snap.docs[0].id;
+      res.innerHTML = `
+        <div class="result-row"><div class="result-label">姓名</div><div>${d.name}</div></div>
+        <div class="result-row"><div class="result-label">身分證號碼</div><div>${d.idNumber}</div></div>
+        <div class="result-row"><div class="result-label">班級</div><div>${d.className}</div></div>
+        <div class="result-row"><div class="result-label">手機</div><div>${d.phone}</div></div>
+        <button class="delete-btn" onclick="deleteReg('${id}', '${d.name}', '${d.idNumber}', '${d.className}', '${d.phone}')">🗑️ 刪除並通知管理員</button>`;
+    }
+  };
+
+  window.deleteReg = (id, name, idNumber, cls, ph) => {
+    // ⭐ 使用 SweetAlert 替代原生的 confirm
+    Swal.fire({
+      title: `確定刪除「${name}」？`,
+      text: "刪除後資料無法復原，並將同步發信通知管理員。",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d32f2f',
+      cancelButtonColor: '#999',
+      confirmButtonText: '確定刪除',
+      cancelButtonText: '取消'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteDoc(doc(db, "registrations", id));
+          await fetch(gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "delete", name: name, idNumber: idNumber, className: cls, phone: ph }) });
+          
+          await Swal.fire({ icon: 'success', title: '已刪除', text: '雲端資料已刪除，並已發信通知管理員。', confirmButtonColor: '#2e7d32' });
+          location.reload();
+        } catch (e) { 
+          Swal.fire({ icon: 'error', title: '錯誤', text: '刪除失敗：' + e.message, confirmButtonColor: '#2e7d32' });
+        }
+      }
+    });
+  };
+
+  document.getElementById("regForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById("subBtn");
+    const loading = document.getElementById("loadingMsg");
+    
+    let rawId = document.getElementById("idNumber").value.trim().toUpperCase();
+    const idRegex = /^[A-Z][0-9]{9}$/;
+    if (!idRegex.test(rawId)) {
+      Swal.fire({ icon: 'error', title: '格式錯誤', text: '身分證號碼請輸入 10 碼（第 1 碼必須為英文字母）。', confirmButtonColor: '#2e7d32' });
+      return; 
+    }
+
+    btn.disabled = true;
+    loading.style.display = "block";
+
+    const formData = {
+      className: document.getElementById("className").value,
+      name: document.getElementById("name").value.trim(),
+      idNumber: rawId,
+      birthday: document.getElementById("birthday").value,
+      email: document.getElementById("email").value.trim(),
+      parent: document.getElementById("parent").value,
+      tel: document.getElementById("tel").value,
+      phone: document.getElementById("phone").value.trim(),
+      address: document.getElementById("address").value,
+      food: document.querySelector('input[name="food"]:checked').value,
+      notice: document.getElementById("notice").value,
+      timestamp: new Date().toLocaleString()
+    };
+
+    try {
+      const q = query(collection(db, "registrations"), where("idNumber", "==", formData.idNumber));
+      const snap = await getDocs(q);
+      
+      if (!snap.empty) { 
+        // ⭐ 使用 SweetAlert 顯示資料重複
+        Swal.fire({ icon: 'warning', title: '資料重複', text: '此身份證已於系統中', confirmButtonColor: '#2e7d32' });
+        btn.disabled = false; 
+        loading.style.display = "none"; 
+        return; 
+      }
+      
+      await addDoc(collection(db, "registrations"), formData);
+      await fetch(gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(formData) });
+      
+      // ⭐ 使用 SweetAlert 顯示報名成功
+      await Swal.fire({ icon: 'success', title: '報名成功！', text: '詳細裝備清單已寄至您的信箱。', confirmButtonColor: '#2e7d32' });
+      location.reload();
+    } catch (err) { 
+      Swal.fire({ icon: 'error', title: '報名失敗', text: err.message, confirmButtonColor: '#2e7d32' });
+      btn.disabled = false; 
+      loading.style.display = "none"; 
+    }
+  });
+</script>
+</body>
+</html>
